@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sofka-devops
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      role: sofka-devops
+  template:
+    metadata:
+      labels:
+        role: sofka-devops
+    spec:
+      containers:
+      - name: sofka-devops
+        image: carlosfoe78/sofka-devops-test
+        ports:
+        - containerPort: 3000
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "200m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sofka-devops
+spec:
+  selector:
+    role: sofka-devops
+  ports: 
+  - protocol: TCP
+    port: 80
+    targetPort: 3000
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sofka-devops
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sofka-devops
+            port:
+              number: 80
+
